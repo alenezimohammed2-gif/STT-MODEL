@@ -1,0 +1,39 @@
+{
+  "name": "arabic-stt",
+  "version": "1.0.0",
+  "description": "Arabic Speech-to-Text using Soniox",
+  "main": "main.js",
+  "scripts": {
+    "start": "unset ELECTRON_RUN_AS_NODE && electron .",
+    "build": "electron-builder --win"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.0",
+    "ws": "^8.16.0"
+  },
+  "devDependencies": {
+    "electron": "^30.5.1",
+    "electron-builder": "^24.9.0"
+  },
+  "build": {
+    "appId": "com.arabic-stt.app",
+    "productName": "Arabic STT",
+    "win": {
+      "target": "nsis",
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": true,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopIcon": true,
+      "runAfterFinish": true
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "src/**/*",
+      "assets/**/*"
+    ]
+  }
+}
