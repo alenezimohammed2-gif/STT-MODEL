@@ -7,14 +7,38 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="container">
-    <div class="status-row">
-      <div class="indicator" id="indicator"></div>
-      <span class="status-text" id="statusText">اضغط CTRL+SHIFT+L</span>
+  <!-- Custom Title Bar -->
+  <div class="titlebar">
+    <span class="titlebar-title">تحويل الكلام إلى نص</span>
+    <div class="titlebar-buttons">
+      <button class="titlebar-btn minimize-btn" id="minimizeBtn">&#x2013;</button>
+      <button class="titlebar-btn close-btn" id="closeBtn">&#x2715;</button>
     </div>
-    <div class="preview-text" id="previewText"></div>
+  </div>
+
+  <div class="container">
+    <!-- Volume Meter -->
+    <div class="volume-section">
+      <canvas id="volumeMeter" width="320" height="50"></canvas>
+    </div>
+
+    <!-- Record Button -->
+    <div class="button-section">
+      <button class="record-btn" id="recordBtn">
+        <span class="record-icon" id="recordIcon"></span>
+        <span class="record-label" id="recordLabel">بدء التسجيل</span>
+      </button>
+    </div>
+
+    <!-- Status -->
+    <div class="status-section">
+      <span class="status-text" id="statusText">جاهز - اضغط الزر أو CTRL+ALT+L</span>
+    </div>
+
+    <!-- Error -->
     <div class="error-text" id="errorText"></div>
   </div>
+
   <script src="renderer.js"></script>
 </body>
 </html>

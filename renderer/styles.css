@@ -5,73 +5,155 @@
 }
 
 body {
-  background: transparent;
+  background: #1a1a2e;
   font-family: 'Segoe UI', 'Arial', sans-serif;
-  -webkit-app-region: drag;
-  user-select: none;
+  color: #e0e0e0;
   overflow: hidden;
+  direction: rtl;
 }
 
+/* Title Bar */
+.titlebar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #16213e;
+  padding: 8px 12px;
+  -webkit-app-region: drag;
+}
+
+.titlebar-title {
+  font-size: 14px;
+  color: #d0d0e0;
+  font-weight: 600;
+}
+
+.titlebar-buttons {
+  display: flex;
+  gap: 6px;
+  direction: ltr;
+  -webkit-app-region: no-drag;
+}
+
+.titlebar-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.minimize-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: #a0a0b0;
+}
+
+.minimize-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
+}
+
+.close-btn {
+  background: rgba(255, 255, 255, 0.08);
+  color: #a0a0b0;
+}
+
+.close-btn:hover {
+  background: #e74c3c;
+  color: #fff;
+}
+
+/* Main Container */
 .container {
-  background: rgba(25, 25, 30, 0.92);
-  border-radius: 14px;
-  padding: 14px 18px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  backdrop-filter: blur(10px);
+  padding: 18px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
-.status-row {
+/* Volume Meter */
+.volume-section {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+#volumeMeter {
+  width: 100%;
+  height: 50px;
+  border-radius: 6px;
+}
+
+/* Record Button */
+.button-section {
+  display: flex;
+  justify-content: center;
+}
+
+.record-btn {
   display: flex;
   align-items: center;
   gap: 10px;
-  direction: rtl;
+  padding: 12px 32px;
+  border: none;
+  border-radius: 30px;
+  background: linear-gradient(135deg, #0f3460, #16213e);
+  color: #ffffff;
+  font-size: 16px;
+  font-family: 'Segoe UI', 'Arial', sans-serif;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.indicator {
-  width: 14px;
-  height: 14px;
+.record-btn:hover {
+  background: linear-gradient(135deg, #1a4a7a, #1e2d50);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.record-btn.recording {
+  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  border-color: rgba(231, 76, 60, 0.4);
+}
+
+.record-btn.recording:hover {
+  background: linear-gradient(135deg, #a93226, #d63031);
+}
+
+.record-icon {
+  width: 16px;
+  height: 16px;
   border-radius: 50%;
-  background: #555;
+  background: #e74c3c;
   flex-shrink: 0;
-  transition: background 0.3s ease;
+  transition: all 0.3s ease;
 }
 
-.indicator.recording {
-  background: #4caf50;
-  animation: pulse 1.5s ease-in-out infinite;
-  box-shadow: 0 0 8px rgba(76, 175, 80, 0.5);
+.record-btn.recording .record-icon {
+  border-radius: 3px;
+  background: #fff;
 }
 
-@keyframes pulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.5; }
-  100% { opacity: 1; }
+/* Status */
+.status-section {
+  text-align: center;
 }
 
 .status-text {
-  color: #ccc;
+  color: #b0b0c0;
   font-size: 14px;
-  font-weight: 500;
 }
 
-.preview-text {
-  color: rgba(255, 255, 255, 0.5);
-  font-size: 11px;
-  margin-top: 6px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  direction: rtl;
-  min-height: 16px;
-}
-
+/* Error */
 .error-text {
-  color: #ff6b6b;
-  font-size: 11px;
-  margin-top: 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  direction: rtl;
+  color: #e74c3c;
+  font-size: 12px;
+  text-align: center;
   min-height: 0;
 }

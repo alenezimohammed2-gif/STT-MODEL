@@ -15,5 +15,17 @@ contextBridge.exposeInMainWorld('sttBridge', {
 
   onError: (callback) => {
     ipcRenderer.on('error', (_event, message) => callback(message));
+  },
+
+  minimizeWindow: () => {
+    ipcRenderer.send('window-minimize');
+  },
+
+  closeWindow: () => {
+    ipcRenderer.send('window-close');
+  },
+
+  toggleRecording: () => {
+    ipcRenderer.send('toggle-recording');
   }
 });

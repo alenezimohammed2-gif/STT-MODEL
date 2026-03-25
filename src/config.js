@@ -5,7 +5,7 @@ module.exports = {
   AUDIO_CHANNELS: 1,
   AUDIO_FORMAT: 'pcm_s16le',
   LANGUAGE_HINTS: ['ar'],
-  HOTKEY: 'CommandOrControl+Shift+L',
-  WINDOW_WIDTH: 280,
-  WINDOW_HEIGHT: 90
+  HOTKEY: 'CommandOrControl+Alt+L',
+  WINDOW_WIDTH: 420,
+  WINDOW_HEIGHT: 260
 };
