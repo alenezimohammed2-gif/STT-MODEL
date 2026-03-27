@@ -61,6 +61,11 @@ public class KeySender {
     const uint KEYEVENTF_UNICODE = 0x0004;
     const uint KEYEVENTF_KEYUP = 0x0002;
 
+    [DllImport("user32.dll")]
+    static extern void keybd_event(byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo);
+
+    const byte VK_BACK = 0x08;
+
     public static void TypeUnicode(string text) {
         if (string.IsNullOrEmpty(text)) return;
 
@@ -85,6 +90,15 @@ public class KeySender {
             SendInput(2, pair, size);
             Thread.Sleep(5);
         }
+    }
+
+    public static void Backspace(int count) {
+        for (int i = 0; i < count; i++) {
+            keybd_event(VK_BACK, 0, 0, UIntPtr.Zero);
+            keybd_event(VK_BACK, 0, KEYEVENTF_KEYUP, UIntPtr.Zero);
+            Thread.Sleep(3);
+        }
+        Thread.Sleep(10);
     }
 }
 "@
@@ -121,6 +135,23 @@ Write-Output "READY"
     this.ps.stdin.write(
       `[KeySender]::TypeUnicode([System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String('${base64}')))\r\n`
     );
+  }
+
+  async correctText(deleteCount, newText) {
+    if (!this.ps || !this.psReady) return;
+
+    // First backspace to delete wrong characters
+    if (deleteCount > 0) {
+      this.ps.stdin.write(`[KeySender]::Backspace(${deleteCount})\r\n`);
+    }
+
+    // Then type the corrected text
+    if (newText && newText.length > 0) {
+      const base64 = Buffer.from(newText, 'utf16le').toString('base64');
+      this.ps.stdin.write(
+        `[KeySender]::TypeUnicode([System.Text.Encoding]::Unicode.GetString([System.Convert]::FromBase64String('${base64}')))\r\n`
+      );
+    }
   }
 
   reset() {}

@@ -20,8 +20,7 @@ class SonioxClient {
     this.reconnectAttempts = 0;
     this.maxReconnectAttempts = 5;
     this.isClosingManually = false;
-    this.typedText = '';
-    // Throttle: accumulate text and send every 120ms
+    this.typedText = '';     // What's actually on screen (never shrinks)
     this.pendingText = '';
     this.throttleTimer = null;
   }
@@ -48,7 +47,7 @@ class SonioxClient {
             language_hints: config.LANGUAGE_HINTS,
             language_hints_strict: true,
             enable_endpoint_detection: true,
-            max_endpoint_delay_ms: 3000
+            max_endpoint_delay_ms: 500
           });
 
           this.ws.send(configMessage);
@@ -93,7 +92,6 @@ class SonioxClient {
 
   disconnect() {
     this.isClosingManually = true;
-    // Flush any pending text before disconnecting
     this._flushPending();
     if (this.throttleTimer) {
       clearTimeout(this.throttleTimer);
@@ -122,6 +120,10 @@ class SonioxClient {
     this.onTokenCallback = callback;
   }
 
+  onCorrection(callback) {
+    this.onCorrectionCallback = callback;
+  }
+
   onError(callback) {
     this.onErrorCallback = callback;
   }
@@ -137,6 +139,7 @@ class SonioxClient {
   _flushPending() {
     if (this.pendingText.length > 0) {
       const text = this.pendingText;
+      this.typedText += text;
       this.pendingText = '';
       this.onTokenCallback?.(text);
     }
@@ -147,7 +150,7 @@ class SonioxClient {
       this.throttleTimer = setTimeout(() => {
         this.throttleTimer = null;
         this._flushPending();
-      }, 120);
+      }, 100);
     }
   }
 
@@ -171,38 +174,59 @@ class SonioxClient {
 
       const hasEnd = tokens.some(t => t.text === '<end>');
 
-      // Build full text from ALL tokens, excluding <end> and auto-punctuation before <end>
-      let filteredTokens = tokens.filter(t => t.text !== '<end>');
-      // Remove trailing "." that Soniox auto-adds before <end>
-      if (hasEnd && filteredTokens.length > 0) {
-        const lastToken = filteredTokens[filteredTokens.length - 1];
-        if (lastToken.text === '.' || lastToken.text === '،') {
-          filteredTokens = filteredTokens.slice(0, -1);
-        }
-      }
-      const currentFullText = filteredTokens.map(t => t.text).join('');
+      // Build full text from all content tokens
+      const currentFullText = tokens
+        .filter(t => t.text !== '<end>')
+        .map(t => t.text)
+        .join('');
 
       if (currentFullText.length > 0) {
-        if (currentFullText.startsWith(this.typedText) &&
-            currentFullText.length > this.typedText.length) {
-          // Normal extension - type only the new part
-          const newText = currentFullText.substring(this.typedText.length);
-          this.typedText = currentFullText;
-          this.pendingText += newText;
-          this._scheduleFlush();
-        } else if (!currentFullText.startsWith(this.typedText)) {
-          // Text changed (correction by Soniox)
-          if (currentFullText.length > this.typedText.length) {
-            // Longer text - type the extra characters beyond what we already typed
-            const newText = currentFullText.substring(this.typedText.length);
-            this.typedText = currentFullText;
-            if (newText.length > 0) {
+        // committed = what's on screen + what's waiting to be flushed
+        const committed = this.typedText + this.pendingText;
+
+        if (currentFullText.startsWith(committed)) {
+          // Normal extension - text grows from what we have
+          if (currentFullText.length > committed.length) {
+            const newText = currentFullText.substring(committed.length);
+            this.pendingText += newText;
+            this._scheduleFlush();
+          }
+        } else {
+          // Text changed (restructure/correction by Soniox)
+          // Find common prefix between committed and currentFullText
+          let commonLen = 0;
+          const minLen = Math.min(committed.length, currentFullText.length);
+          for (let i = 0; i < minLen; i++) {
+            if (committed[i] === currentFullText[i]) commonLen = i + 1;
+            else break;
+          }
+
+          // How many chars we typed that are now wrong
+          const wrongChars = committed.length - commonLen;
+          // What should replace them + any new text
+          const correctText = currentFullText.substring(commonLen);
+
+          if (wrongChars > 0 && wrongChars <= 8 && !hasEnd) {
+            // Small correction - use backspace to fix
+            this._flushPending();
+            const deleteFromTyped = this.typedText.length - commonLen;
+            if (deleteFromTyped > 0) {
+              this.typedText = this.typedText.substring(0, commonLen);
+              this.onCorrectionCallback?.(deleteFromTyped, correctText);
+              this.typedText += correctText;
+            }
+          } else {
+            // Large restructure or <end> - adjust position, accept some loss
+            this.pendingText = '';
+            if (currentFullText.length < this.typedText.length) {
+              this.typedText = this.typedText.substring(0, currentFullText.length);
+            }
+            // If there's new text beyond our position, type it
+            if (currentFullText.length > this.typedText.length) {
+              const newText = currentFullText.substring(this.typedText.length);
               this.pendingText += newText;
               this._scheduleFlush();
             }
-          } else {
-            // Same length or shorter - just update tracking
-            this.typedText = currentFullText;
           }
         }
       }

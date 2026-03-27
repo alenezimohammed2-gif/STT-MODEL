@@ -134,6 +134,12 @@ async function startRecording() {
     mainWindow.webContents.send('transcription', { text, isFinal: true });
   });
 
+
+  sonioxClient.onCorrection((deleteCount, newText) => {
+    debugLog(`CORRECTION: delete ${deleteCount}, type "${newText}"`);
+    textOutput.correctText(deleteCount, newText);
+  });
+
   sonioxClient.onError((message) => {
     mainWindow.webContents.send('error', message);
   });
